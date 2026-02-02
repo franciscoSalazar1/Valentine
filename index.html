@@ -49,6 +49,49 @@
       font-size: clamp(14px, 2vw, 18px);
     }
 
+    /* NEW: date options under the subtitle */
+    .dateBox {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.75);
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    .dateTitle {
+      margin: 0 0 10px;
+      font-weight: 800;
+      opacity: 0.9;
+    }
+    .dateList {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .dateBtn {
+      border: 1px solid rgba(0,0,0,0.08);
+      background: rgba(255,255,255,0.9);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 18px rgba(0,0,0,0.10);
+      transition: transform 120ms ease, box-shadow 120ms ease;
+      user-select: none;
+    }
+    .dateBtn:active {
+      transform: translateY(1px) scale(0.99);
+      box-shadow: 0 8px 14px rgba(0,0,0,0.10);
+    }
+    .dateBtn.selected {
+      border-color: rgba(255,45,122,0.35);
+      background: linear-gradient(135deg, rgba(255,45,122,0.15), rgba(138,43,226,0.12));
+    }
+    .chosenLine {
+      margin: 10px 0 0;
+      font-weight: 700;
+      opacity: 0.85;
+    }
+
     .stage {
       position: relative;
       margin-top: 18px;
@@ -195,7 +238,19 @@
 <body>
   <div class="wrap">
     <h1>Will you be my Valentine? 💘</h1>
-    <p class="subtitle">Tap the button as many times as you want… Cupid never misses.</p>
+    <p class="subtitle">I love you with all my heart, you are my biggest blessing.</p>
+
+    <!-- NEW: date options -->
+    <div class="dateBox">
+      <p class="dateTitle">Pick a date 💖</p>
+      <div class="dateList" id="dateList">
+        <!-- You can change these 3 to anything you want -->
+        <button class="dateBtn" data-date="Fri, Feb 14">Fri, Feb 14</button>
+        <button class="dateBtn" data-date="Sat, Feb 15">Sat, Feb 15</button>
+        <button class="dateBtn" data-date="Sun, Feb 16">Sun, Feb 16</button>
+      </div>
+      <div class="chosenLine" id="chosenLine">Chosen date: <b>—</b></div>
+    </div>
 
     <div class="stage" id="stage">
       <div class="cupid" aria-hidden="true">
@@ -206,7 +261,6 @@
       <div class="target">
         <p class="ask" id="askLine">The answer is:</p>
         <p class="word" id="word">YES</p>
-        <div class="small" id="subword">(spam the shoot button 😄)</div>
       </div>
     </div>
 
@@ -215,7 +269,6 @@
       <button class="resetBtn" id="resetBtn">Reset 🔄</button>
 
       <div class="pill">Shots: <span id="shots">0</span></div>
-      <div class="pill">Mode: <span id="modeLabel">Cycle</span></div>
       <div class="pill small">Tip: hold <b>Space</b> to spam</div>
     </div>
 
@@ -226,18 +279,9 @@
 
   <script>
     // ====== CUSTOMIZE HERE ======
-    // Put any options you want. Example:
-    // ["YES 💗", "ALWAYS 😘", "100% ✅", "OBVIOUSLY 💘"]
     const OPTIONS = ["YES 💗", "ALWAYS 😘", "ABSOLUTELY 💘", "OF COURSE 😇"];
-
-    // If you want it to ALWAYS land on the same text, set this to true.
     const ALWAYS_SAME = false;
     const ALWAYS_TEXT = "YES 💗";
-
-    // If ALWAYS_SAME is false:
-    // - "cycle" goes through OPTIONS in order
-    // - "random" picks randomly each shot
-    const MODE = "cycle"; // "cycle" or "random"
     // ============================
 
     const stage = document.getElementById("stage");
@@ -245,24 +289,31 @@
     const resetBtn = document.getElementById("resetBtn");
     const word = document.getElementById("word");
     const shotsEl = document.getElementById("shots");
-    const modeLabel = document.getElementById("modeLabel");
 
-    modeLabel.textContent = ALWAYS_SAME ? "Always YES" : (MODE === "random" ? "Random" : "Cycle");
+    // NEW: date picking logic
+    const dateList = document.getElementById("dateList");
+    const chosenLine = document.getElementById("chosenLine");
+    let chosenDate = null;
+
+    dateList.addEventListener("click", (e) => {
+      const btn = e.target.closest(".dateBtn");
+      if (!btn) return;
+
+      chosenDate = btn.dataset.date;
+
+      // highlight selected
+      document.querySelectorAll(".dateBtn").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+
+      chosenLine.innerHTML = `Chosen date: <b>${chosenDate}</b>`;
+    });
 
     let shots = 0;
     let idx = 0;
 
     function pickText() {
       if (ALWAYS_SAME) return ALWAYS_TEXT;
-
       if (!OPTIONS || OPTIONS.length === 0) return "YES";
-
-      if (MODE === "random") {
-        const r = Math.floor(Math.random() * OPTIONS.length);
-        return OPTIONS[r];
-      }
-
-      // cycle
       const t = OPTIONS[idx % OPTIONS.length];
       idx++;
       return t;
@@ -289,7 +340,6 @@
 
         function animate(now) {
           const t = Math.min(1, (now - start) / duration);
-          // gravity-ish curve
           const gx = dx * t;
           const gy = dy * t + 220 * t * t;
 
@@ -307,28 +357,23 @@
       shots++;
       shotsEl.textContent = shots;
 
-      // create arrow element per shot (so spamming works)
       const a = document.createElement("div");
       a.className = "arrow";
       a.textContent = "🏹➜";
-      // slight vertical variation for fun
       const baseY = stage.clientHeight * 0.5;
       const jitter = (Math.random() * 60) - 30;
       a.style.top = (baseY + jitter) + "px";
       stage.appendChild(a);
 
       const startX = 130;
-      const endX = stage.clientWidth - 260; // roughly target position
-
-      const duration = 420; // quick so spamming feels satisfying
+      const endX = stage.clientWidth - 260;
+      const duration = 420;
       const start = performance.now();
 
-      // update target text at "impact"
       const newText = pickText();
 
       function anim(now) {
         const t = Math.min(1, (now - start) / duration);
-        // ease-in-out
         const ease = t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2) / 2;
 
         const x = startX + (endX - startX) * ease;
@@ -337,18 +382,15 @@
         if (t < 1) {
           requestAnimationFrame(anim);
         } else {
-          // Impact moment
           word.textContent = newText;
           word.classList.remove("hit");
-          void word.offsetWidth; // restart animation
+          void word.offsetWidth;
           word.classList.add("hit");
 
-          // Confetti near target (right side)
           const burstX = stage.clientWidth - 120;
           const burstY = stage.clientHeight * 0.5 + jitter * 0.2;
           confettiBurst(burstX, burstY);
 
-          // remove arrow shortly after
           setTimeout(() => a.remove(), 120);
         }
       }
@@ -362,7 +404,11 @@
       word.textContent = ALWAYS_SAME ? ALWAYS_TEXT : (OPTIONS[0] || "YES");
       word.classList.remove("hit");
 
-      // remove any leftover arrows/confetti
+      // reset date selection
+      chosenDate = null;
+      chosenLine.innerHTML = `Chosen date: <b>—</b>`;
+      document.querySelectorAll(".dateBtn").forEach(b => b.classList.remove("selected"));
+
       stage.querySelectorAll(".arrow, .confetti").forEach(el => el.remove());
     }
 
@@ -394,3 +440,4 @@
   </script>
 </body>
 </html>
+
