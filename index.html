@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Be My Valentine 💘</title>
+  <style>
+    :root {
+      --bg1: #ffd6e7;
+      --bg2: #ffffff;
+      --accent: #ff2d7a;
+      --accent2: #8a2be2;
+      --text: #1a1a1a;
+      --card: rgba(255, 255, 255, 0.7);
+      --shadow: 0 18px 40px rgba(0,0,0,0.12);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: linear-gradient(180deg, var(--bg1), var(--bg2));
+      overflow: hidden;
+    }
+
+    .wrap {
+      width: min(900px, 92vw);
+      padding: 22px;
+      border-radius: 26px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      position: relative;
+    }
+
+    h1 {
+      margin: 8px 0 0;
+      font-size: clamp(26px, 4vw, 44px);
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      opacity: 0.85;
+      font-size: clamp(14px, 2vw, 18px);
+    }
+
+    .stage {
+      position: relative;
+      margin-top: 18px;
+      height: 320px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.75), rgba(255,255,255,0.35));
+      border: 1px solid rgba(255,255,255,0.65);
+      overflow: hidden;
+    }
+
+    /* Cupid */
+    .cupid {
+      position: absolute;
+      left: 22px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 82px;
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.15));
+      user-select: none;
+    }
+    .cupid .label {
+      display: block;
+      font-size: 14px;
+      opacity: 0.75;
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    /* Target */
+    .target {
+      position: absolute;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: min(340px, 45%);
+      padding: 18px 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.85);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.10);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      text-align: center;
+    }
+
+    .target .ask {
+      font-size: clamp(16px, 2.2vw, 20px);
+      margin: 0 0 10px;
+      opacity: 0.85;
+    }
+
+    .target .word {
+      font-size: clamp(30px, 4vw, 52px);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: var(--accent);
+      margin: 0;
+      transition: transform 140ms ease, filter 140ms ease;
+      user-select: none;
+    }
+    .target .word.hit {
+      transform: scale(1.08);
+      filter: drop-shadow(0 10px 12px rgba(255,45,122,0.25));
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 14px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 12px 22px rgba(0,0,0,0.12);
+      transition: transform 120ms ease, box-shadow 120ms ease;
+      user-select: none;
+    }
+
+    button:active {
+      transform: translateY(1px) scale(0.99);
+      box-shadow: 0 10px 18px rgba(0,0,0,0.12);
+    }
+
+    .shootBtn {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      min-width: 160px;
+    }
+
+    .resetBtn {
+      background: rgba(255,255,255,0.85);
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .pill {
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.85);
+      border: 1px solid rgba(0,0,0,0.06);
+      font-weight: 700;
+    }
+
+    .small {
+      opacity: 0.75;
+      font-weight: 600;
+    }
+
+    /* Arrow instances */
+    .arrow {
+      position: absolute;
+      left: 130px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 40px;
+      will-change: transform;
+      user-select: none;
+      pointer-events: none;
+      filter: drop-shadow(0 8px 10px rgba(0,0,0,0.18));
+    }
+
+    /* Confetti bits */
+    .confetti {
+      position: absolute;
+      width: 8px;
+      height: 14px;
+      border-radius: 3px;
+      opacity: 0.95;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+
+    .footer {
+      margin-top: 12px;
+      opacity: 0.78;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Will you be my Valentine? 💘</h1>
+    <p class="subtitle">Tap the button as many times as you want… Cupid never misses.</p>
+
+    <div class="stage" id="stage">
+      <div class="cupid" aria-hidden="true">
+        🏹😇
+        <span class="label">Cupid</span>
+      </div>
+
+      <div class="target">
+        <p class="ask" id="askLine">The answer is:</p>
+        <p class="word" id="word">YES</p>
+        <div class="small" id="subword">(spam the shoot button 😄)</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="shootBtn" id="shootBtn">Shoot! 🏹</button>
+      <button class="resetBtn" id="resetBtn">Reset 🔄</button>
+
+      <div class="pill">Shots: <span id="shots">0</span></div>
+      <div class="pill">Mode: <span id="modeLabel">Cycle</span></div>
+      <div class="pill small">Tip: hold <b>Space</b> to spam</div>
+    </div>
+
+    <div class="footer small">
+      Customize the options in the code: <b>const OPTIONS = [...]</b> (you can make it always “YES” too).
+    </div>
+  </div>
+
+  <script>
+    // ====== CUSTOMIZE HERE ======
+    // Put any options you want. Example:
+    // ["YES 💗", "ALWAYS 😘", "100% ✅", "OBVIOUSLY 💘"]
+    const OPTIONS = ["YES 💗", "ALWAYS 😘", "ABSOLUTELY 💘", "OF COURSE 😇"];
+
+    // If you want it to ALWAYS land on the same text, set this to true.
+    const ALWAYS_SAME = false;
+    const ALWAYS_TEXT = "YES 💗";
+
+    // If ALWAYS_SAME is false:
+    // - "cycle" goes through OPTIONS in order
+    // - "random" picks randomly each shot
+    const MODE = "cycle"; // "cycle" or "random"
+    // ============================
+
+    const stage = document.getElementById("stage");
+    const shootBtn = document.getElementById("shootBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const word = document.getElementById("word");
+    const shotsEl = document.getElementById("shots");
+    const modeLabel = document.getElementById("modeLabel");
+
+    modeLabel.textContent = ALWAYS_SAME ? "Always YES" : (MODE === "random" ? "Random" : "Cycle");
+
+    let shots = 0;
+    let idx = 0;
+
+    function pickText() {
+      if (ALWAYS_SAME) return ALWAYS_TEXT;
+
+      if (!OPTIONS || OPTIONS.length === 0) return "YES";
+
+      if (MODE === "random") {
+        const r = Math.floor(Math.random() * OPTIONS.length);
+        return OPTIONS[r];
+      }
+
+      // cycle
+      const t = OPTIONS[idx % OPTIONS.length];
+      idx++;
+      return t;
+    }
+
+    function confettiBurst(x, y) {
+      const pieces = 26;
+      for (let i = 0; i < pieces; i++) {
+        const c = document.createElement("div");
+        c.className = "confetti";
+        c.style.left = x + "px";
+        c.style.top = y + "px";
+        c.style.background = `hsl(${Math.floor(Math.random() * 360)}, 90%, 60%)`;
+
+        stage.appendChild(c);
+
+        const angle = Math.random() * Math.PI * 2;
+        const power = 60 + Math.random() * 120;
+        const dx = Math.cos(angle) * power;
+        const dy = Math.sin(angle) * power - (40 + Math.random() * 60);
+
+        const duration = 700 + Math.random() * 450;
+        const start = performance.now();
+
+        function animate(now) {
+          const t = Math.min(1, (now - start) / duration);
+          // gravity-ish curve
+          const gx = dx * t;
+          const gy = dy * t + 220 * t * t;
+
+          c.style.transform = `translate(${gx}px, ${gy}px) rotate(${t * 540}deg)`;
+          c.style.opacity = String(1 - t);
+
+          if (t < 1) requestAnimationFrame(animate);
+          else c.remove();
+        }
+        requestAnimationFrame(animate);
+      }
+    }
+
+    function shoot() {
+      shots++;
+      shotsEl.textContent = shots;
+
+      // create arrow element per shot (so spamming works)
+      const a = document.createElement("div");
+      a.className = "arrow";
+      a.textContent = "🏹➜";
+      // slight vertical variation for fun
+      const baseY = stage.clientHeight * 0.5;
+      const jitter = (Math.random() * 60) - 30;
+      a.style.top = (baseY + jitter) + "px";
+      stage.appendChild(a);
+
+      const startX = 130;
+      const endX = stage.clientWidth - 260; // roughly target position
+
+      const duration = 420; // quick so spamming feels satisfying
+      const start = performance.now();
+
+      // update target text at "impact"
+      const newText = pickText();
+
+      function anim(now) {
+        const t = Math.min(1, (now - start) / duration);
+        // ease-in-out
+        const ease = t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2) / 2;
+
+        const x = startX + (endX - startX) * ease;
+        a.style.transform = `translate(${x - startX}px, -50%)`;
+
+        if (t < 1) {
+          requestAnimationFrame(anim);
+        } else {
+          // Impact moment
+          word.textContent = newText;
+          word.classList.remove("hit");
+          void word.offsetWidth; // restart animation
+          word.classList.add("hit");
+
+          // Confetti near target (right side)
+          const burstX = stage.clientWidth - 120;
+          const burstY = stage.clientHeight * 0.5 + jitter * 0.2;
+          confettiBurst(burstX, burstY);
+
+          // remove arrow shortly after
+          setTimeout(() => a.remove(), 120);
+        }
+      }
+      requestAnimationFrame(anim);
+    }
+
+    function resetAll() {
+      shots = 0;
+      idx = 0;
+      shotsEl.textContent = "0";
+      word.textContent = ALWAYS_SAME ? ALWAYS_TEXT : (OPTIONS[0] || "YES");
+      word.classList.remove("hit");
+
+      // remove any leftover arrows/confetti
+      stage.querySelectorAll(".arrow, .confetti").forEach(el => el.remove());
+    }
+
+    shootBtn.addEventListener("click", shoot);
+    resetBtn.addEventListener("click", resetAll);
+
+    // Spacebar spamming (press & hold)
+    let spamming = false;
+    let spamTimer = null;
+
+    window.addEventListener("keydown", (e) => {
+      if (e.code === "Space" && !spamming) {
+        e.preventDefault();
+        spamming = true;
+        shoot();
+        spamTimer = setInterval(shoot, 140);
+      }
+    });
+    window.addEventListener("keyup", (e) => {
+      if (e.code === "Space") {
+        spamming = false;
+        clearInterval(spamTimer);
+        spamTimer = null;
+      }
+    });
+
+    // initialize
+    resetAll();
+  </script>
+</body>
+</html>
